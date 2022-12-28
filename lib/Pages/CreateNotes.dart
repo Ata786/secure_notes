@@ -1,4 +1,4 @@
-import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:avatar_glow/avatar_glow.dart';
 import 'package:uuid/uuid.dart';
 import '../Components/CheckInternet.dart';
 import 'package:flutter/material.dart';
@@ -30,9 +30,8 @@ class CreateNotesPage extends State<CreateNotes> {
   TextEditingController titleController = TextEditingController();
   TextEditingController desController = TextEditingController();
 
-  SpeechToText speech = SpeechToText();
+  SpeechToText? speech ;
   bool speechEnable = false;
-  String speechText = '';
 
   List<String> menuItems = ['Posts','Notes'];
   String date = DateFormat('yyyy-MM-dd - kk:mm').format(DateTime.now());
@@ -42,7 +41,7 @@ class CreateNotesPage extends State<CreateNotes> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _initSpeech();
+    speech = SpeechToText();
   }
 
   @override
@@ -155,8 +154,14 @@ class CreateNotesPage extends State<CreateNotes> {
           margin: EdgeInsets.only(bottom: myHeight / 30,left: myWidth / 30),
           child: ElevatedButton(
               onPressed: ()async{
-
-                  addData(myHeight,myWidth);
+               bool conn = await CheckConnection.checkInternet(context);
+                  if(conn == true){
+                    addData(myHeight,myWidth);
+                  }else{
+                    showDialog(context: context, builder: (context){
+                      return CustomDialog().dialog(EnumType.INTERNET, myHeight, myWidth);
+                    });
+                  }
 
               },
               style: ElevatedButton.styleFrom(
@@ -167,21 +172,26 @@ class CreateNotesPage extends State<CreateNotes> {
           ),
         ),
         Container(
-          height: 60,
-          width: 60,
-          margin: EdgeInsets.only(bottom: myHeight / 30,left: myWidth / 50),
-          child: ElevatedButton(
-            onPressed: () {  },
-              onLongPress: ()async{
-              speech.isNotListening ? _startListening : _stopListening;
-              },
-              style: ElevatedButton.styleFrom(
+          height: 65,
+          width: 65,
+          margin: EdgeInsets.only(bottom: myHeight / 30,left: myWidth / 70),
+          child: AvatarGlow(
+            animate: speechEnable,
+            endRadius: 60,
+            glowColor: Color(0xffff0000),
+            duration: Duration(milliseconds: 2000),
+            repeatPauseDuration: Duration(milliseconds: 100),
+            repeat: true,
+            child: InkWell(
+              onTap: () => onListen(),
+              child: Card(
+              color: Color(0xffff0000),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(myWidth/2))
-                ),
-                backgroundColor: Color(0xffff0000),
+              borderRadius: BorderRadius.all(Radius.circular(myWidth/2))
+    ),
+                child: Center(child: speechEnable ? Icon(Icons.settings_voice,color: Colors.white,) : Icon(Icons.mic_none,color: Colors.white,),),
               ),
-             child: Center(child: Icon(Icons.settings_voice),),
+            ),
           ),
         )
       ],
@@ -221,27 +231,31 @@ class CreateNotesPage extends State<CreateNotes> {
 
   }
 
-  void _initSpeech() async {
-    speechEnable = await speech.initialize();
-    setState(() {});
-  }
+  void onListen()async{
+    if(!speechEnable){
+      bool isAvailable = await speech!.initialize(
+        onStatus: (status)=> print('status is ${status}'),
+        onError: (error)=> print('status is ${error}')
+      );
 
-  void _startListening() async {
-    await speech.listen(onResult: _onSpeechResult);
-    setState(() {
-      desController.text = speechText;
-    });
-  }
+      if(isAvailable){
+        setState(() {
+          speechEnable = true;
+        });
 
-  void _stopListening() async {
-    await speech.stop();
-    setState(() {});
-  }
+        speech!.listen(
+          onResult: (result)=> setState(() {
+            desController.text = result.recognizedWords;
+          })
+        );
 
-  void _onSpeechResult(SpeechRecognitionResult result) {
-    setState(() {
-      speechText = result.recognizedWords;
-    });
+      }
+    }else{
+      setState(() {
+        speechEnable = false;
+        speech!.stop();
+      });
+    }
   }
 
 }

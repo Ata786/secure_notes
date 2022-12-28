@@ -141,7 +141,7 @@ Widget posts(double myHeight,double myWidth,FirebaseFirestore firebaseFirestore,
                               );
                             }else{
                               return SizedBox();
-                            };
+                            }
                           },
                         );
                       }else{

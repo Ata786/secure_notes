@@ -9,14 +9,15 @@ class CustomDialog{
   Dialog dialog(EnumType type,double height,double width){
     return Dialog(
       elevation: 10,
-      child: EnumType.INTERNET.index == type ? InternetDialog(height,width) : ProgressDialog(height,width),
+      child: type == EnumType.INTERNET ? InternetDialog(height,width) : ProgressDialog(height,width),
     );
   }
 
   Widget InternetDialog(double height,double width){
     return Container(
       height: height / 4,
-      width: width / 3,
+      width: width / 10,
+      child: Center(child: Image.asset('assets/no_wifi.png'),),
     );
   }
 

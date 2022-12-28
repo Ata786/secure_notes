@@ -89,15 +89,6 @@ class ChildNotes extends State<Notes> with TickerProviderStateMixin {
     return userModel;
   }
 
-  void checkNotes()async{
-    bool conn = await CheckConnection.checkInternet(context);
-    if(conn){
-      print('true');
-    }else{
-      print('false');
-    }
-  }
-
 
   Future<QuerySnapshot> getNotes()async{
 
@@ -289,8 +280,12 @@ class ChildNotes extends State<Notes> with TickerProviderStateMixin {
                   return FloatingActionButton(
                     onPressed: (){
                       setState(() {
-                        documentId = document!.docs[ind!].id;
-                        firebaseFirestore.collection('UserNotes').doc(auth.currentUser!.uid).collection('Notes').doc(documentId).delete();
+
+                          documentId = document!.docs[ind!].id;
+                          firebaseFirestore.collection('UserNotes').doc(auth.currentUser!.uid).collection('Notes').doc(documentId).delete().then((value){
+                            context.read<DeleteButtonBloc>().add(DeleteButtonCheckEvent(0));
+                            context.read<CheckBoxBloc>().add(CheckBoxEventFirst(0));
+                          });
 
                         firebaseFirestore.collection('UserNotes').doc(auth.currentUser!.uid).collection('Notes').get().then((QuerySnapshot querySnapshot){
                           if(querySnapshot.docs.length == 0){

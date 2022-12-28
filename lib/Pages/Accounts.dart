@@ -9,39 +9,23 @@ import '../Bloc/RequestButton/request_bt_bloc.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:uuid/uuid.dart';
 
-// bool isFriend=false;
-//
-// void setData(String id)async{
-//
-//   FirebaseAuth auth = FirebaseAuth.instance;
-//   FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
-//   CollectionReference r = firebaseFirestore.collection('User').doc(auth.currentUser!.uid).collection('Friends');
-//   QuerySnapshot q = await r.get();
-//   q.docs.forEach((element) {
-//     var friendId = element['friendId'];
-//     if(id == friendId){
-//       isFriend = true;
-//
-//     }
-//   });
-//
-// }
+FirebaseAuth auth = FirebaseAuth.instance;
+FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
+QuerySnapshot? userData;
 
 Widget setAccounts(double myHeight,double myWidth){
-  FirebaseAuth auth = FirebaseAuth.instance;
-  FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
-
   return Container(
     child: FutureBuilder(
-      future: firebaseFirestore.collection('User').get(),
+      future: getUsers(),
       builder: (context,snapshot){
         if(snapshot.hasData){
           return  AnimationLimiter(
               child: ListView.builder(
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (context,index){
-                  // setData(snapshot.data!.docs[index].id);
+
                     DocumentSnapshot d =snapshot.data!.docs[index];
+
                     return AnimationConfiguration.staggeredList(
                       position: index,
                       duration: Duration(seconds: 1),
@@ -49,7 +33,7 @@ Widget setAccounts(double myHeight,double myWidth){
                           verticalOffset: 100.0,
                           horizontalOffset: 10.0,
                           child: Container(
-                            child: auth.currentUser!.uid == snapshot.data!.docs[index].id  ? null : accounts(myHeight,myWidth,d,context,index),
+                            child: auth.currentUser!.uid == snapshot.data!.docs[index].id ? null : accounts(myHeight,myWidth,d,context,index),
                           )
                       ),
                     );
@@ -69,7 +53,9 @@ Widget accounts(double myHeight,double myWidth,DocumentSnapshot d,BuildContext c
 
   FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
   FirebaseAuth auth = FirebaseAuth.instance;
+
   int i = 0;
+
   return  Container(
     height: myHeight / 10,
     width: myWidth,
@@ -174,3 +160,20 @@ Widget accounts(double myHeight,double myWidth,DocumentSnapshot d,BuildContext c
     ),
   );
 }
+
+Future<QuerySnapshot> getUsers()async{
+
+  QuerySnapshot friends = await firebaseFirestore.collection('User').doc(auth.currentUser!.uid).collection('Friends').get();
+
+  List<String> friendsIds = friends.docs.map((e) => e.id).toList();
+
+  if(friendsIds.isNotEmpty){
+    userData = await firebaseFirestore.collection('User').where('id',whereNotIn: friendsIds).get();
+  }else{
+    userData = await firebaseFirestore.collection('User').get();
+  }
+
+  return userData!;
+}
+
+

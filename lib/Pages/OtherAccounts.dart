@@ -5,8 +5,6 @@ import '../Firebase/UserModel.dart';
 import 'package:shimmer/shimmer.dart';
 import '../Components/Colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../Bloc/RequestButton/request_bt_bloc.dart';
 
 import 'Accounts.dart';
 import 'Requests.dart';
@@ -37,19 +35,8 @@ class Accounts extends State<OtherAccounts> with TickerProviderStateMixin {
     return userModel;
   }
 
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-
-  }
-
-
-
   @override
   Widget build(BuildContext context) {
-
     TabController tabController = TabController(length: 3, vsync: this);
 
     double myHeight = MediaQuery.of(context).size.height;
@@ -213,6 +200,7 @@ class Accounts extends State<OtherAccounts> with TickerProviderStateMixin {
         )
     );
   }
+
 
 
 

@@ -15,8 +15,6 @@ import 'dart:async';
 import '../Components/CheckInternet.dart';
 import '../Components/InternetDialog.dart';
 import '../Firebase/FirebaseSignUp.dart';
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:path_provider/path_provider.dart';
 
 
 class SignUpPage extends StatefulWidget{
@@ -166,8 +164,7 @@ class _SignUpPage extends State<SignUpPage> {
                                   Button(
                                     pressed: () async {
                                       bool conn = await CheckConnection.checkInternet(context);
-
-                                      if(conn){
+                                      if(conn == true){
                                         if(file != null){
                                           FirebaseSignUp().registerUser(context, userName.text.trim(), email.text.trim(), password.text.trim(),file!,myHeight,myWidth);
                                         }else{
